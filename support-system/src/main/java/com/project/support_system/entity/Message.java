@@ -1,0 +1,23 @@
+package com.project.support_system.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.time.LocalDateTime;
+
+@Entity
+@Data
+public class Message {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Long ticketId;
+
+    @Enumerated(EnumType.STRING)
+    private Sender sender;
+
+    private String message;
+
+    private LocalDateTime timestamp;
+}
