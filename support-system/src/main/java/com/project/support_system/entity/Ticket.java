@@ -19,4 +19,5 @@ public class Ticket {
     private Status status;
 
     private LocalDateTime createdAt;
+
 }
