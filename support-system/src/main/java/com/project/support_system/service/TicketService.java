@@ -14,7 +14,8 @@ import java.util.Optional;
 
 @Service
 public class TicketService {
-
+    @Autowired
+    private OpenAIService openAIService;
     @Autowired
     private TicketRepository ticketRepository;
     @Autowired
@@ -37,7 +38,13 @@ public class TicketService {
         messageRepository.save(userMessage);
 
         // 3. Generate AI response (mock)
-        String aiResponse = generateAIResponse(query);
+        String aiResponse;
+
+        try {
+            aiResponse = openAIService.getAIResponse(query);
+        } catch (Exception e) {
+            aiResponse = generateFallbackResponse(query);
+        }
 
         // 4. Store AI message
         Message aiMessage = new Message();
@@ -58,6 +65,15 @@ public class TicketService {
             return "Your request has been forwarded to our support team.";
         } else {
             return "Thank you for contacting us. How can I assist further?";
+        }
+    }
+    private String generateFallbackResponse(String query) {
+        if (query.toLowerCase().contains("order")) {
+            return "Please provide your order ID to assist you.";
+        } else if (query.toLowerCase().contains("refund")) {
+            return "Your request has been forwarded to our support team.";
+        } else {
+            return "Thank you for contacting us. Our support team will assist you shortly.";
         }
     }
 
