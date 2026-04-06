@@ -17,7 +17,7 @@ public class TicketController {
     private TicketService ticketService;
 
     @PostMapping
-    public Ticket createTicket(@RequestBody Map<String, String> request) {
+    public String createTicket(@RequestBody Map<String,String> request) {
         return ticketService.createTicket(request.get("query"));
     }
 
