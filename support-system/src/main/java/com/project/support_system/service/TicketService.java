@@ -45,6 +45,13 @@ public class TicketService {
         } catch (Exception e) {
             aiResponse = generateFallbackResponse(query);
         }
+        if (query.toLowerCase().contains("refund") ||
+                query.toLowerCase().contains("complaint") ||
+                query.toLowerCase().contains("angry")) {
+
+            savedTicket.setStatus(Status.NEEDS_HUMAN);
+            ticketRepository.save(savedTicket);
+        }
 
         // 4. Store AI message
         Message aiMessage = new Message();
@@ -83,5 +90,12 @@ public class TicketService {
 
     public Optional<Ticket> getTicketById(Long id) {
         return ticketRepository.findById(id);
+    }
+    public Ticket updateStatus(Long ticketId, Status status) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+        ticket.setStatus(status);
+        return ticketRepository.save(ticket);
     }
 }
