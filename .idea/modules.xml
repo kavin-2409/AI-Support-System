@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/support-system.iml" filepath="$PROJECT_DIR$/.idea/support-system.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Ai_fullstackApp.iml" filepath="$PROJECT_DIR$/.idea/Ai_fullstackApp.iml" />
     </modules>
   </component>
 </project>
