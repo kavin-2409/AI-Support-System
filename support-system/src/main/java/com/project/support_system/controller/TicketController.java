@@ -22,8 +22,13 @@ public class TicketController {
     private MessageRepository messageRepository;
 
     @PostMapping
-    public String createTicket(@RequestBody Map<String,String> request) {
-        return ticketService.createTicket(request.get("query"));
+    public String createTicket(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody Map<String, String> request) {
+
+        String token = authHeader.replace("Bearer ", "");
+
+        return ticketService.createTicket(request.get("query"), token);
     }
 
     @GetMapping

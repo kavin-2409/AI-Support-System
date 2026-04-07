@@ -3,6 +3,8 @@ import com.project.support_system.entity.Message;
 import com.project.support_system.entity.Sender;
 import com.project.support_system.entity.Status;
 import com.project.support_system.entity.Ticket;
+import com.project.support_system.entity.User;
+import com.project.support_system.repository.UserRepository;
 import com.project.support_system.repository.MessageRepository;
 import com.project.support_system.repository.TicketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,21 +17,37 @@ import java.util.Optional;
 @Service
 public class TicketService {
     @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
     private OpenAIService openAIService;
     @Autowired
     private TicketRepository ticketRepository;
     @Autowired
     private MessageRepository messageRepository;
-    public String createTicket(String query) {
+    public String createTicket(String query, String token) {
 
-        // 1. Create ticket
+        // 🔥 1. Extract email from JWT
+        String email = jwtService.extractEmail(token);
+
+        // 🔥 2. Fetch user from DB
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 🔥 3. Create ticket
         Ticket ticket = new Ticket();
         ticket.setQuery(query);
         ticket.setStatus(Status.OPEN);
         ticket.setCreatedAt(LocalDateTime.now());
+
+        // 🔥 4. SET USER ID (THIS IS IMPORTANT)
+        ticket.setUserId(user.getId());
+
         Ticket savedTicket = ticketRepository.save(ticket);
 
-        // 2. Store user message
+        // 🔥 5. Store user message
         Message userMessage = new Message();
         userMessage.setTicketId(savedTicket.getId());
         userMessage.setSender(Sender.USER);
@@ -37,7 +55,8 @@ public class TicketService {
         userMessage.setTimestamp(LocalDateTime.now());
         messageRepository.save(userMessage);
 
-        // 3. Generate AI response (mock)
+        // 🔥 6. AI response
+        //String aiResponse = openAIService.getAIResponse(query);
         String aiResponse;
 
         try {
@@ -45,15 +64,9 @@ public class TicketService {
         } catch (Exception e) {
             aiResponse = generateFallbackResponse(query);
         }
-        if (query.toLowerCase().contains("refund") ||
-                query.toLowerCase().contains("complaint") ||
-                query.toLowerCase().contains("angry")) {
 
-            savedTicket.setStatus(Status.NEEDS_HUMAN);
-            ticketRepository.save(savedTicket);
-        }
 
-        // 4. Store AI message
+        // 🔥 7. Store AI message
         Message aiMessage = new Message();
         aiMessage.setTicketId(savedTicket.getId());
         aiMessage.setSender(Sender.AI);
@@ -61,7 +74,7 @@ public class TicketService {
         aiMessage.setTimestamp(LocalDateTime.now());
         messageRepository.save(aiMessage);
 
-        // 5. Return response
+        // 🔥 8. Return response
         return aiResponse;
     }
     private String generateAIResponse(String query) {
