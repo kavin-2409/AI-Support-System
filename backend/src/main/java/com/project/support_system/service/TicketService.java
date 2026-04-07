@@ -21,8 +21,8 @@ public class TicketService {
 
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private OpenAIService openAIService;
+    //@Autowired
+   // private OpenAIService openAIService;
     @Autowired
     private TicketRepository ticketRepository;
     @Autowired
@@ -57,13 +57,14 @@ public class TicketService {
 
         // 🔥 6. AI response
         //String aiResponse = openAIService.getAIResponse(query);
-        String aiResponse;
+       // String aiResponse;
 
-        try {
-            aiResponse = openAIService.getAIResponse(query);
-        } catch (Exception e) {
-            aiResponse = generateFallbackResponse(query);
-        }
+       // try {
+          //  aiResponse = openAIService.getAIResponse(query);
+        //} catch (Exception e) {
+         //   aiResponse = generateFallbackResponse(query);
+       // }
+        String aiResponse = generateFallbackResponse(query);
 
 
         // 🔥 7. Store AI message

@@ -11,5 +11,3 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
-openai:
-  api-key: ${OPENAI_API_KEY}
