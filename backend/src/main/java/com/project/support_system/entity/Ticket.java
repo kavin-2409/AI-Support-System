@@ -14,6 +14,7 @@ public class Ticket {
     private Long userId;
 
     private String query;
+    private String respose;
 
     @Enumerated(EnumType.STRING)
     private Status status;

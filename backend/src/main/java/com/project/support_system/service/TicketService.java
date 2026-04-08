@@ -41,9 +41,13 @@ public class TicketService {
         ticket.setQuery(query);
         ticket.setStatus(Status.OPEN);
         ticket.setCreatedAt(LocalDateTime.now());
+        //ticket.setResponse(aiResponse);
 
         // 🔥 4. SET USER ID (THIS IS IMPORTANT)
         ticket.setUserId(user.getId());
+
+
+        ticketRepository.save(ticket);
 
         Ticket savedTicket = ticketRepository.save(ticket);
 
@@ -65,6 +69,11 @@ public class TicketService {
          //   aiResponse = generateFallbackResponse(query);
        // }
         String aiResponse = generateFallbackResponse(query);
+        if (aiResponse.contains("support team")) {
+            ticket.setStatus(Status.NEEDS_HUMAN); // instead of OPEN
+        } else {
+            ticket.setStatus(Status.RESOLVED);
+        }
 
 
         // 🔥 7. Store AI message
