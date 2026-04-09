@@ -7,7 +7,7 @@ import com.project.support_system.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.project.support_system.entity.Status;
-
+import com.project.support_system.repository.TicketRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,6 +20,9 @@ public class TicketController {
     private TicketService ticketService;
     @Autowired
     private MessageRepository messageRepository;
+
+    @Autowired
+    private TicketRepository ticketRepository;
 
     @PostMapping
     public String createTicket(
@@ -37,9 +40,19 @@ public class TicketController {
     }
 
     @GetMapping("/{id}")
-    public Optional<Ticket> getTicketById(@PathVariable Long id) {
-        return ticketService.getTicketById(id);
+    public Map<String, Object> getTicketById(@PathVariable Long id) {
+
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+        List<Message> messages = messageRepository.findByTicketId(id);
+
+        return Map.of(
+                "ticket", ticket,
+                "messages", messages
+        );
     }
+
     @GetMapping("/{id}/messages")
     public List<Message> getMessages(@PathVariable Long id) {
         return messageRepository.findByTicketId(id);

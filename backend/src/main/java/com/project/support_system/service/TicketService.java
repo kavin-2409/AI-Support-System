@@ -47,7 +47,7 @@ public class TicketService {
         ticket.setUserId(user.getId());
 
 
-        ticketRepository.save(ticket);
+        //ticketRepository.save(ticket);
 
         Ticket savedTicket = ticketRepository.save(ticket);
 
@@ -74,6 +74,7 @@ public class TicketService {
         } else {
             ticket.setStatus(Status.RESOLVED);
         }
+        ticketRepository.save(ticket);
 
 
         // 🔥 7. Store AI message

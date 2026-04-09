@@ -1,18 +1,17 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: "http://localhost:8080", // 🔥 FIX HERE
 });
 
-// attach JWT automatically
-API.interceptors.request.use((req) => {
+// 🔐 attach token automatically
+API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
-
   if (token) {
-    req.headers.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`;
   }
-
-  return req;
+  return config;
 });
 
+console.log("API BASE URL:",API.defaults.baseURL);
 export default API;
