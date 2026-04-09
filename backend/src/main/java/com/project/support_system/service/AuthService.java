@@ -15,6 +15,7 @@ public class AuthService {
     private JwtService jwtService;
 
     public String register(User user) {
+        user.setRole("USER");
         userRepository.save(user);
         return "User registered successfully";
     }

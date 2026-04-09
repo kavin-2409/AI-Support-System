@@ -17,7 +17,14 @@ function Login() {
       }
 
       localStorage.setItem("token", res.data.token);
-      window.location.href = "/dashboard";
+      localStorage.setItem("role", res.data.role);
+
+      // 🔥 redirect based on role
+      if (res.data.role === "ADMIN") {
+        window.location.href = "/admin";
+      } else {
+        window.location.href = "/dashboard";
+      }
     } catch (err) {
       console.error(err);
       alert("Server error");

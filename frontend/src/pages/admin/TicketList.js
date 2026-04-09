@@ -6,6 +6,9 @@ import "./admin.css"; // FIXED: Changed to lowercase to match your file exactly
 function TicketList() {
   const [tickets, setTickets] = useState([]);
   const navigate = useNavigate();
+  if (localStorage.getItem("role") !== "ADMIN") {
+    window.location.href = "/";
+  }
 
   useEffect(() => {
     // FIXED: Moving the fetch function inside useEffect satisfies the ESLint warning

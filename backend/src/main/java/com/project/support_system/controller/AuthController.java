@@ -2,6 +2,7 @@ package com.project.support_system.controller;
 
 import com.project.support_system.entity.User;
 import com.project.support_system.service.AuthService;
+import com.project.support_system.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,12 +10,14 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
-//@CrossOrigin(origins = "*")
 @CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/register")
     public String register(@RequestBody User user) {
@@ -37,6 +40,15 @@ public class AuthController {
             return Map.of("error", token);
         }
 
-        return Map.of("token", token);
+        User user = userRepository.findByEmail(email).orElse(null);
+
+        if (user == null) {
+            return Map.of("error", "User not found");
+        }
+
+        return Map.of(
+                "token", token,
+                "role", user.getRole()
+        );
     }
 }
