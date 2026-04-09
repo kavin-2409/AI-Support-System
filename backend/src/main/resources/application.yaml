@@ -11,3 +11,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+gemini:
+  api:
+    key: AIzaSyBd8mCdUOR62kE4kObe_qMGrfObZfC0nuM

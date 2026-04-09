@@ -21,8 +21,8 @@ public class TicketService {
 
     @Autowired
     private UserRepository userRepository;
-    //@Autowired
-   // private OpenAIService openAIService;
+    @Autowired
+    private GeminiService geminiService;
     @Autowired
     private TicketRepository ticketRepository;
     @Autowired
@@ -68,7 +68,10 @@ public class TicketService {
         //} catch (Exception e) {
          //   aiResponse = generateFallbackResponse(query);
        // }
-        String aiResponse = generateFallbackResponse(query);
+        String aiResponse = geminiService.getResponse(query);
+        if (aiResponse == null || aiResponse.isEmpty()) {
+            aiResponse = generateFallbackResponse(query);
+        }
         if (aiResponse.contains("support team")) {
             ticket.setStatus(Status.NEEDS_HUMAN); // instead of OPEN
         } else {
@@ -99,12 +102,55 @@ public class TicketService {
         }
     }
     private String generateFallbackResponse(String query) {
-        if (query.toLowerCase().contains("order")) {
-            return "Please provide your order ID to assist you.";
-        } else if (query.toLowerCase().contains("refund")) {
-            return "Your request has been forwarded to our support team.";
-        } else {
-            return "Thank you for contacting us. Our support team will assist you shortly.";
+
+        String q = query.toLowerCase();
+
+        // 📦 ORDER RELATED
+        if (q.contains("order") || q.contains("delivery") || q.contains("shipping")) {
+            return "Please provide your order ID. You can track your order in the 'My Orders' section.";
+        }
+
+        // 💰 REFUND / PAYMENT
+        else if (q.contains("refund") || q.contains("return") || q.contains("payment")) {
+            return "Your request has been forwarded to our support team. Refunds are typically processed within 5-7 business days.";
+        }
+
+        // 🔐 ACCOUNT / PASSWORD
+        else if (q.contains("password") || q.contains("login") || q.contains("account")) {
+            return "You can reset your password using the 'Forgot Password' option on the login page.";
+        }
+
+        // 📞 CONTACT / SUPPORT
+        else if (q.contains("contact") || q.contains("support") || q.contains("help")) {
+            return "You can reach our support team via email or raise a ticket here. We are happy to assist you!";
+        }
+
+        // 🚫 CANCELLATION
+        else if (q.contains("cancel") || q.contains("cancellation")) {
+            return "Orders can be cancelled within 24 hours of placing them. Please provide your order ID to proceed.";
+        }
+
+        // 📍 ADDRESS CHANGE
+        else if (q.contains("address") || q.contains("change address")) {
+            return "You can update your delivery address from your profile settings before the order is shipped.";
+        }
+
+        // ⏰ DELIVERY DELAY
+        else if (q.contains("late") || q.contains("delay")) {
+            return "We apologize for the delay. Please provide your order ID so we can check the status for you.";
+        }
+
+        // 📦 DAMAGED PRODUCT
+        else if (q.contains("damaged") || q.contains("broken")) {
+            return "We are sorry to hear that. Please upload images of the product and your order ID to initiate a replacement.";
+        }
+        else if (q.contains("12345")){
+            return "We will update about your order sooner.So kindly wait please";
+        }
+
+        // 🎯 DEFAULT
+        else {
+            return "Thank you for contacting us. Our support team will review your request and assist you shortly.";
         }
     }
 

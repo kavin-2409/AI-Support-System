@@ -1,21 +1,30 @@
 import React, { useState, useRef, useEffect } from "react";
 import API from "../services/api";
 import "./Dashboard.css";
-
+import { useNavigate } from "react-router-dom";
 function Dashboard() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
 
-  // UI ONLY: Reference to auto-scroll chat to the bottom
+  const navigate = useNavigate();
+  // 🔥 LOGOUT FUNCTION
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    navigate("/");
+  };
+
+  // UI ONLY: auto-scroll
   const messagesEndRef = useRef(null);
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // YOUR EXACT LOGIC (Untouched)
+  // 🔥 SEND MESSAGE
   const handleSend = async () => {
     if (!input.trim()) return;
 
@@ -24,7 +33,6 @@ function Dashboard() {
       sender: "user",
     };
 
-    // show user message immediately
     setMessages((prev) => [...prev, userMessage]);
 
     try {
@@ -50,9 +58,9 @@ function Dashboard() {
     setInput("");
   };
 
-  // UI ONLY: Allow pressing 'Enter' to send
+  // ENTER KEY SUPPORT
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSend();
     }
   };
@@ -61,22 +69,19 @@ function Dashboard() {
     <div className="dashboard-wrapper">
       <div className="desktop-layout">
 
-        {/* --- LEFT SIDEBAR (TICKET HISTORY) --- */}
+        {/* LEFT SIDEBAR */}
         <aside className="ticket-sidebar">
           <div className="sidebar-header">
             <h2>Support Portal</h2>
           </div>
-          <div className="ticket-list">
-            {/* The hardcoded "Active Session" item you requested to remove is gone from here. */}
-            {/* You can map your real dynamic ticket history here in the future. */}
-          </div>
+          <div className="ticket-list"></div>
         </aside>
 
-        {/* --- RIGHT MAIN AREA (CHAT) --- */}
+        {/* MAIN CHAT AREA */}
         <main className="chat-main">
 
-          {/* HEADER */}
-          <header className="chat-header">
+          {/* 🔥 HEADER WITH LOGOUT */}
+          <header className="chat-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div className="header-left">
               <div className="bot-avatar-container">
                 <div className="badge">1</div>
@@ -85,20 +90,36 @@ function Dashboard() {
                 </svg>
                 <div className="status-dot"></div>
               </div>
+
               <div className="header-info">
                 <h3>MindX Bot</h3>
                 <span>Online</span>
               </div>
             </div>
+
+            {/* 🔥 LOGOUT BUTTON */}
+            <button
+              onClick={handleLogout}
+              style={{
+                backgroundColor: "#ff4d4f",
+                color: "white",
+                border: "none",
+                padding: "8px 14px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: "500"
+              }}
+            >
+              Logout
+            </button>
           </header>
 
           {/* CHAT BODY */}
           <div className="chat-body">
             {messages.length === 0 && (
-               <div className="chat-date-divider">Start of conversation</div>
+              <div className="chat-date-divider">Start of conversation</div>
             )}
 
-            {/* YOUR MESSAGES MAPPED TO NEW UI */}
             {messages.map((msg, index) => (
               <div key={index} className={`message-wrapper ${msg.sender}`}>
                 {msg.sender === "bot" && (
@@ -109,12 +130,13 @@ function Dashboard() {
                 {msg.sender === "user" && (
                   <div className="sender-label">You</div>
                 )}
+
                 <div className="message-bubble" style={{ whiteSpace: "pre-wrap" }}>
                   {msg.text}
                 </div>
               </div>
             ))}
-            {/* Invisible div for auto-scrolling */}
+
             <div ref={messagesEndRef} />
           </div>
 
@@ -129,17 +151,21 @@ function Dashboard() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
               />
+
               <button
-                className={`send-btn ${input.trim() ? 'active' : ''}`}
+                className={`send-btn ${input.trim() ? "active" : ""}`}
                 onClick={handleSend}
               >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" strokeWidth="2"
+                     strokeLinecap="round" strokeLinejoin="round">
                   <line x1="22" y1="2" x2="11" y2="13"></line>
                   <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                 </svg>
               </button>
             </div>
           </div>
+
         </main>
 
       </div>
