@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class TicketService {
@@ -27,7 +29,7 @@ public class TicketService {
     private TicketRepository ticketRepository;
     @Autowired
     private MessageRepository messageRepository;
-    public String createTicket(String query, String token) {
+    public Map<String, Object> createTicket(String query, String token) {
 
         // 🔥 1. Extract email from JWT
         String email = jwtService.extractEmail(token);
@@ -41,17 +43,11 @@ public class TicketService {
         ticket.setQuery(query);
         ticket.setStatus(Status.OPEN);
         ticket.setCreatedAt(LocalDateTime.now());
-        //ticket.setResponse(aiResponse);
-
-        // 🔥 4. SET USER ID (THIS IS IMPORTANT)
         ticket.setUserId(user.getId());
-
-
-        //ticketRepository.save(ticket);
 
         Ticket savedTicket = ticketRepository.save(ticket);
 
-        // 🔥 5. Store user message
+        // 🔥 4. Store user message
         Message userMessage = new Message();
         userMessage.setTicketId(savedTicket.getId());
         userMessage.setSender(Sender.USER);
@@ -59,26 +55,28 @@ public class TicketService {
         userMessage.setTimestamp(LocalDateTime.now());
         messageRepository.save(userMessage);
 
-        // 🔥 6. AI response
-        //String aiResponse = openAIService.getAIResponse(query);
-       // String aiResponse;
+        // 🔥 5. AI response (your Gemini logic)
+        // 🔥 6. AI RESPONSE (FIXED)
+        String aiResponse;
 
-       // try {
-          //  aiResponse = openAIService.getAIResponse(query);
-        //} catch (Exception e) {
-         //   aiResponse = generateFallbackResponse(query);
-       // }
-        String aiResponse = geminiService.getResponse(query);
-        if (aiResponse == null || aiResponse.isEmpty()) {
+        try {
+            aiResponse = generateFallbackResponse(query);
+        } catch (Exception e) {
+            System.out.println("Gemini error: " + e.getMessage());
             aiResponse = generateFallbackResponse(query);
         }
-        if (aiResponse.contains("support team")) {
-            ticket.setStatus(Status.NEEDS_HUMAN); // instead of OPEN
+
+// fallback safety
+
+
+// 🔥 STATUS UPDATE
+        if (aiResponse.toLowerCase().contains("support team")) {
+            ticket.setStatus(Status.NEEDS_HUMAN);
         } else {
             ticket.setStatus(Status.RESOLVED);
         }
-        ticketRepository.save(ticket);
 
+        ticketRepository.save(ticket);
 
         // 🔥 7. Store AI message
         Message aiMessage = new Message();
@@ -88,8 +86,12 @@ public class TicketService {
         aiMessage.setTimestamp(LocalDateTime.now());
         messageRepository.save(aiMessage);
 
-        // 🔥 8. Return response
-        return aiResponse;
+        // 🔥 8. RETURN ticketId + response (IMPORTANT CHANGE)
+        Map<String, Object> response = new HashMap<>();
+        response.put("ticketId", savedTicket.getId());
+        response.put("response", aiResponse);
+
+        return response;
     }
     private String generateAIResponse(String query) {
 
@@ -153,7 +155,40 @@ public class TicketService {
             return "Thank you for contacting us. Our support team will review your request and assist you shortly.";
         }
     }
+    public Map<String, Object> addMessage(Long ticketId, String messageText) {
 
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+
+        // 🔥 Save USER message
+        Message userMessage = new Message();
+        userMessage.setTicketId(ticketId);
+        userMessage.setSender(Sender.USER);
+        userMessage.setMessage(messageText);
+        userMessage.setTimestamp(LocalDateTime.now());
+        messageRepository.save(userMessage);
+
+        // 🔥 AI response
+        String aiResponse;
+        try {
+            aiResponse = generateFallbackResponse(messageText);
+        } catch (Exception e) {
+            aiResponse = generateFallbackResponse(messageText);
+        }
+
+        // 🔥 Save AI message
+        Message aiMessage = new Message();
+        aiMessage.setTicketId(ticketId);
+        aiMessage.setSender(Sender.AI);
+        aiMessage.setMessage(aiResponse);
+        aiMessage.setTimestamp(LocalDateTime.now());
+        messageRepository.save(aiMessage);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("response", aiResponse);
+
+        return response;
+    }
     public List<Ticket> getAllTickets() {
         return ticketRepository.findAll();
     }
